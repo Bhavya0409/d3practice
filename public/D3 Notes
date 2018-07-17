@@ -1,0 +1,29 @@
+1. d3.select() to get first element that matches
+2. d3.append() to append svg element to existing element
+3. d3.attr() to add attribute to exiting element
+    a. 'width' is exact width of that element
+    b. 'height' is exact height of that element
+    c. 'x' is the x position of that element from the LEFT
+    d. 'y' is the y position of that element from the TOP -> starting point of canvas is TOP LEFT
+    e. 'transform' changes how the element is positioned from the starting point
+        i. 'transform=rotate(-90)' rotates the element 90 degrees counter clockwise
+        ii. 'transform=translate(x, y)' moves the element X pixels to the LEFT from its original position
+            AND Y pixels DOWN from its original position
+            NOTE: if an element is also rotated, then the the shifts will also be rotated (i.e. rotated -90 with translation of y -60 pixels will move the element LEFT)
+    f. any other css/svg properties
+4. d3.scaleBand() is used to create an x scale, where the labels are strings and not exact values/pixels.
+    NOTE: In essence, this creates a mapping between the label strings and the x values of where the bar will be on the chart
+    a. d3.domain() takes in as an array of values as the argument that the band can take  (e.g. it should be ALL values, i.e. use data.map() to return all values)
+    b. d3.range() takes in array with a min and max (of pixels that the chart width will constrain into, i.e. generally between 0 -> width)
+5. d3.scaleLinear() is used to create a y scale, where the values are values/pixels
+    NOTE: In essence, this creates a mapping between the actual values and the y values of where the bar will be on the chart
+    a. d3.domain() takes in as an array of min and max of the data set (generally 0 -> d3.max(data))
+    b. d3.range() takes in array with a min and max (of pixels that the chart width will constrain into, i.e. generally between 0 -> width)
+        i. Might have to reverse height (i.e. from height -> 0) to flip the bars
+6. d3.axisBottom(scale) creates an axis bottom using the scale function defined
+    a. can be extended to axisLeft, etc.
+7. d3.call() is used on an appended element and takes in 1 argument, the created axis
+8. Set the x value of a bar by passing in the name into the xScale function
+9. Set the y value of a bar by passing in the associated value into the yScale
+10. Set the width of the bar by simply calling xScale.bandwidth
+11. Set the height of the bar by calling 'height - yScale(associated value)'

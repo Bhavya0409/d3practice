@@ -65,7 +65,7 @@ d3.json("data/revenues.json").then(function(data) {
         }).attr('y', function (d) {
             return yScale(d.revenue)
         })
-        .attr('width', xScale.bandwidth)
+        .attr('width', xScale.bandwidth())
         .attr('height', function (d) {
             return height - yScale(d.revenue)
         })
