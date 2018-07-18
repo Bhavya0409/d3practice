@@ -27,3 +27,9 @@
 9. Set the y value of a bar by passing in the associated value into the yScale
 10. Set the width of the bar by simply calling xScale.bandwidth
 11. Set the height of the bar by calling 'height - yScale(associated value)'
+
+12. D3 Update Pattern
+    a. DATA JOIN elements
+    b. REMOVE elements that are part of the screen but no longer in the data array
+    c. UPDATE existing elements that are a part of the screen as well as in the data array
+    d. ADD new elements that are a part of the data array but not on the screen

@@ -1,7 +1,9 @@
-var margin = { left: 80, right: 20, top: 50, bottom: 100 };
+const margin = {left: 80, right: 20, top: 50, bottom: 100};
 
-var width = 600 - margin.left - margin.right,
+const width = 600 - margin.left - margin.right,
     height = 400 - margin.top - margin.bottom;
+
+let revenueDataVisible = true;
 
 const g = d3.select("#chart-area")
     .append('svg')
@@ -26,57 +28,74 @@ const yScale = d3.scaleLinear()
 
 g.append('text')
     .text('Month')
-    .attr('x', width/2)
+    .attr('x', width / 2)
     .attr('y', height + 50)
     .attr('text-anchor', 'middle')
     .attr('font-size', '20px');
 
-g.append('text')
+const yLabel = g.append('text')
     .text('Revenue')
-    .attr('x', -height/2)
+    .attr('x', -height / 2)
     .attr('y', '-60')
     .attr('text-anchor', 'middle')
     .attr('font-size', '20px')
     .attr('transform', 'rotate(-90)');
 
-d3.json("data/revenues.json").then(function(data) {
-    data.forEach(function(d) {
-        d.revenue = +d.revenue
+d3.json("data/revenues.json").then(function (data) {
+    data.forEach(function (d) {
+        d.revenue = +d.revenue;
+        d.profit = +d.profit;
     });
 
     d3.interval(function () {
-        update(data)
+        update(data);
+        revenueDataVisible = !revenueDataVisible;
     }, 1000);
 
     update(data);
 });
 
 function update(data) {
+    const value = revenueDataVisible ? 'revenue' : 'profit';
 
-    xScale.domain(data.map(function(d) { return d.month; }));
+    xScale.domain(data.map(function (d) {
+        return d.month;
+    }));
     yScale.domain([0, d3.max(data, function (d) {
-        return d.revenue;
+        return d[value];
     })]);
 
+    // X Axis
     const xAxisCall = d3.axisBottom(xScale);
     xAxisGroup.call(xAxisCall);
 
-    const yAxisCall = d3.axisLeft(yScale).tickFormat(function(d) {return "$" + d;});
+    // Y Axis
+    const yAxisCall = d3.axisLeft(yScale).tickFormat(function (d) {
+        return "$" + d;
+    });
     yAxisGroup.call(yAxisCall);
 
+    // JOIN new data with old elements
+    const rects = g.selectAll('rect').data(data);
 
-    // g.selectAll('rect')
-    //     .data(data)
-    //     .enter()
-    //     .append('rect')
-    //     .attr('x', function(d) {
-    //         return xScale(d.month);
-    //     }).attr('y', function (d) {
-    //     return yScale(d.revenue)
-    // })
-    //     .attr('width', xScale.bandwidth())
-    //     .attr('height', function (d) {
-    //         return height - yScale(d.revenue)
-    //     })
-    //     .attr('fill', 'grey');
+    // EXIT old elements not present in new data
+    rects.exit().remove();
+
+    // UPDATE old elements present in new data
+    rects.attr('x', function (d) { return xScale(d.month) })
+        .attr('y', function (d) { return yScale(d[value]) })
+        .attr('width', xScale.bandwidth())
+        .attr('height', function (d) { return height - yScale(d[value]) });
+
+    // ENTER new elements present in new data
+
+    rects.enter()
+        .append('rect')
+        .attr('x', function (d) { return xScale(d.month) })
+        .attr('y', function (d) { return yScale(d[value]) })
+        .attr('width', xScale.bandwidth())
+        .attr('height', function (d) { return height - yScale(d[value]) })
+        .attr('fill', 'grey');
+
+    yLabel.text(revenueDataVisible ? 'Revenue' : 'Profit');
 }
