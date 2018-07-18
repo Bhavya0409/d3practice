@@ -10,14 +10,28 @@ const g = d3.select("#chart-area")
     .append('g')
     .attr("transform", "translate(" + margin.left + ", " + margin.top + ")");
 
-const xLabel = g.append('text')
+const xAxisGroup = g.append('g')
+    .attr('class', 'x-axis-label')
+    .attr("transform", "translate(0, " + height + ")");
+
+const yAxisGroup = g.append('g')
+    .attr('class', 'y-axis-label');
+
+const xScale = d3.scaleBand()
+    .range([0, width])
+    .padding(0.2);
+
+const yScale = d3.scaleLinear()
+    .range([height, 0]);
+
+g.append('text')
     .text('Month')
     .attr('x', width/2)
     .attr('y', height + 50)
     .attr('text-anchor', 'middle')
     .attr('font-size', '20px');
 
-const yLabel = g.append('text')
+g.append('text')
     .text('Revenue')
     .attr('x', -height/2)
     .attr('y', '-60')
@@ -30,44 +44,39 @@ d3.json("data/revenues.json").then(function(data) {
         d.revenue = +d.revenue
     });
 
-    const xScale = d3.scaleBand()
-        .domain(data.map(function(d) { return d.month; }))
-        .range([0, width])
-        .padding(0.3);
+    d3.interval(function () {
+        update(data)
+    }, 1000);
 
-    const yScale = d3.scaleLinear()
-        .domain([0, d3.max(data, function (d) {
-            return d.revenue;
-        })])
-        .range([height, 0]);
+    update(data);
+});
+
+function update(data) {
+
+    xScale.domain(data.map(function(d) { return d.month; }));
+    yScale.domain([0, d3.max(data, function (d) {
+        return d.revenue;
+    })]);
 
     const xAxisCall = d3.axisBottom(xScale);
+    xAxisGroup.call(xAxisCall);
 
-    const yAxisCall = d3.axisLeft(yScale);
+    const yAxisCall = d3.axisLeft(yScale).tickFormat(function(d) {return "$" + d;});
+    yAxisGroup.call(yAxisCall);
 
-    g.append('g')
-        .attr('class', 'x-axis-label')
-        .attr("transform", "translate(0, " + height + ")")
-        .call(xAxisCall)
-        .selectAll("text")
-        .attr('font-size', '12px');
 
-    g.append('g')
-        .attr('class', 'y-axis-label')
-        .call(yAxisCall);
-
-    g.selectAll('rect')
-        .data(data)
-        .enter()
-        .append('rect')
-        .attr('x', function(d) {
-            return xScale(d.month);
-        }).attr('y', function (d) {
-            return yScale(d.revenue)
-        })
-        .attr('width', xScale.bandwidth())
-        .attr('height', function (d) {
-            return height - yScale(d.revenue)
-        })
-        .attr('fill', 'grey')
-});
+    // g.selectAll('rect')
+    //     .data(data)
+    //     .enter()
+    //     .append('rect')
+    //     .attr('x', function(d) {
+    //         return xScale(d.month);
+    //     }).attr('y', function (d) {
+    //     return yScale(d.revenue)
+    // })
+    //     .attr('width', xScale.bandwidth())
+    //     .attr('height', function (d) {
+    //         return height - yScale(d.revenue)
+    //     })
+    //     .attr('fill', 'grey');
+}
