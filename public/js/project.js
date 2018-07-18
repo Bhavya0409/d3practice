@@ -1,5 +1,3 @@
-import d3 from './d3.min';
-
 const margin = {left: 80, right: 20, top: 50, bottom: 100};
 
 const width = 600 - margin.left - margin.right,
@@ -52,7 +50,7 @@ d3.json("data/revenues.json").then(function (data) {
     d3.interval(function () {
         update(data);
         revenueDataVisible = !revenueDataVisible;
-    }, 2000);
+    }, 1000);
 
     update(data);
 });

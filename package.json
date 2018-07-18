@@ -10,6 +10,7 @@
     "babel-cli": "^6.26.0",
     "babel-core": "^6.26.3",
     "babel-preset-es2015": "^6.24.1",
+    "concurrently": "^3.6.0",
     "gulp": "^3.9.1",
     "gulp-babel": "^7.0.1",
     "gulp-plumber": "^1.2.0",
@@ -17,9 +18,8 @@
     "pump": "^3.0.0"
   },
   "scripts": {
-    "gulp": "gulp",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "start": "concurrently \"node server.js\" \"gulp\""
   },
   "repository": {
     "type": "git",
