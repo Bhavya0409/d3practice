@@ -1,3 +1,5 @@
+import d3 from './d3.min';
+
 const margin = {left: 80, right: 20, top: 50, bottom: 100};
 
 const width = 600 - margin.left - margin.right,
@@ -50,7 +52,7 @@ d3.json("data/revenues.json").then(function (data) {
     d3.interval(function () {
         update(data);
         revenueDataVisible = !revenueDataVisible;
-    }, 1000);
+    }, 2000);
 
     update(data);
 });
@@ -58,21 +60,15 @@ d3.json("data/revenues.json").then(function (data) {
 function update(data) {
     const value = revenueDataVisible ? 'revenue' : 'profit';
 
-    xScale.domain(data.map(function (d) {
-        return d.month;
-    }));
-    yScale.domain([0, d3.max(data, function (d) {
-        return d[value];
-    })]);
+    xScale.domain(data.map(d => d.month));
+    yScale.domain([0, d3.max(data, d => d[value])]);
 
     // X Axis
     const xAxisCall = d3.axisBottom(xScale);
     xAxisGroup.call(xAxisCall);
 
     // Y Axis
-    const yAxisCall = d3.axisLeft(yScale).tickFormat(function (d) {
-        return "$" + d;
-    });
+    const yAxisCall = d3.axisLeft(yScale).tickFormat( d => "$" + d);
     yAxisGroup.call(yAxisCall);
 
     // JOIN new data with old elements
@@ -82,19 +78,19 @@ function update(data) {
     rects.exit().remove();
 
     // UPDATE old elements present in new data
-    rects.attr('x', function (d) { return xScale(d.month) })
-        .attr('y', function (d) { return yScale(d[value]) })
+    rects.attr('x', d => xScale(d.month))
+        .attr('y', d => yScale(d[value]))
         .attr('width', xScale.bandwidth())
-        .attr('height', function (d) { return height - yScale(d[value]) });
+        .attr('height', d => height - yScale(d[value]));
 
     // ENTER new elements present in new data
 
     rects.enter()
         .append('rect')
-        .attr('x', function (d) { return xScale(d.month) })
-        .attr('y', function (d) { return yScale(d[value]) })
+        .attr('x', d => xScale(d.month))
+        .attr('y', d => yScale(d[value]))
         .attr('width', xScale.bandwidth())
-        .attr('height', function (d) { return height - yScale(d[value]) })
+        .attr('height', d => height - yScale(d[value]) )
         .attr('fill', 'grey');
 
     yLabel.text(revenueDataVisible ? 'Revenue' : 'Profit');

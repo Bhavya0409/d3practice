@@ -1,0 +1,34 @@
+{
+  "name": "d3practice",
+  "version": "1.0.0",
+  "description": "Practice D3 From Udemy Course",
+  "main": "server.js",
+  "dependencies": {
+    "express": "^4.16.3"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-core": "^6.26.3",
+    "babel-preset-es2015": "^6.24.1",
+    "gulp": "^3.9.1",
+    "gulp-babel": "^7.0.1",
+    "gulp-plumber": "^1.2.0",
+    "gulp-uglify": "^3.0.0",
+    "pump": "^3.0.0"
+  },
+  "scripts": {
+    "gulp": "gulp",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Bhavya0409/d3practice.git"
+  },
+  "author": "Bhavya Shah",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Bhavya0409/d3practice/issues"
+  },
+  "homepage": "https://github.com/Bhavya0409/d3practice#readme"
+}
