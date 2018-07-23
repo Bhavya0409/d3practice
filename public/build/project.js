@@ -51,17 +51,17 @@ function update(data) {
     yAxisGroup.transition(t).call(yAxisCall);
 
     // JOIN new data with old elements
-    const rects = g.selectAll('rect').data(data, d => d.month);
+    const rects = g.selectAll('circle').data(data, d => d.month);
 
     // EXIT old elements not present in new data
-    rects.exit().attr('fill', 'red').transition(t).attr('y', yScale(0)).attr('height', 0).remove();
+    rects.exit().attr('fill', 'red').transition(t).attr('cy', yScale(0)).remove();
 
     // UPDATE old elements present in new data
-    rects.transition(t).attr('x', d => xScale(d.month)).attr('y', d => yScale(d[value])).attr('width', xScale.bandwidth()).attr('height', d => height - yScale(d[value]));
+    rects.transition(t).attr('cx', d => xScale(d.month)).attr('cy', d => yScale(d[value])).attr('width', xScale.bandwidth()).attr('height', d => height - yScale(d[value]));
 
     // ENTER new elements present in new data
 
-    rects.enter().append('rect').attr('fill', 'grey').attr('y', yScale(0)).attr('height', 0).attr('x', d => xScale(d.month)).attr('width', xScale.bandwidth()).merge(rects).transition(t).attr('x', d => xScale(d.month)).attr('width', xScale.bandwidth()).attr('y', d => yScale(d[value])).attr('height', d => height - yScale(d[value]));
+    rects.enter().append('circle').attr('fill', 'grey').attr('cy', yScale(0)).attr('r', 5).attr('cx', d => xScale(d.month) + xScale.bandwidth() / 2).merge(rects).transition(t).attr('cx', d => xScale(d.month) + xScale.bandwidth() / 2).attr('cy', d => yScale(d[value]));
 
     yLabel.text(revenueDataVisible ? 'Revenue' : 'Profit');
 }
