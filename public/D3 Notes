@@ -33,3 +33,21 @@
     b. REMOVE elements that are part of the screen but no longer in the data array
     c. UPDATE existing elements that are a part of the screen as well as in the data array
     d. ADD new elements that are a part of the data array but not on the screen
+
+Steps to create a D3 canvas:
+1. Set Margin Object
+2. Set Height and Width of svg
+3. Create SVG
+4. Create xScale and yScale
+5. Create xLabel and yLabel
+6. Create axes call functions (optional tick values, tick format) (these are the call functions)
+7. Create g element and call the above function
+
+8. Import the data
+9. Format the data
+10. Set interval to execute update function
+11. Update function will consist of the following:
+    a. Join svg elements with data (optional specify which property to assign)
+    b. Exit old elements (.exit().remove())
+    c. Enter new elements (.append().merge().transition(t))
+        i. everything before merge will be for enter elements and everything after will be for both enter and updated elements
