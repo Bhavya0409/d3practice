@@ -12,6 +12,18 @@ const g = d3.select('#chart-area')
     .append('g')
     .attr('transform', 'translate(' + margin.left + ', ' + margin.top + ')');
 
+const tip = d3.tip()
+    .attr('class', 'd3-tip').html(d => {
+        let text = '<strong>Country:</strong> <span style="color: red">' + d.country + '</span><br/>';
+        text += '<strong>Continent:</strong> <span style="color: red; text-transform: capitalize">' + d.continent + '</span><br/>';
+        text += '<strong>Life Expectancy:</strong> <span style="color: red">' + d3.format(".2f")(d.life_exp) + '</span><br/>';
+        text += '<strong>GDP Per Capita:</strong> <span style="color: red">' + d3.format("$,.0f")(d.income) + '</span><br/>';
+        text += '<strong>Population:</strong> <span style="color: red">' + d3.format(",.0f")(d.population) + '</span><br/>';
+        return text;
+    });
+
+g.call(tip);
+
 const xScale = d3.scaleLog()
     .base(10)
     .domain([300, 150000])
@@ -95,11 +107,11 @@ d3.json('data/gapminder.json').then(data => {
         })
     });
 
-    d3.interval(() => {
-        time++;
-        if (time === 214) time = 0;
-        update(formattedData[time]);
-    }, 100);
+    // d3.interval(() => {
+    //     time++;
+    //     if (time === 214) time = 0;
+    //     update(formattedData[time]);
+    // }, 100);
 
     update(formattedData[0])
 });
@@ -114,6 +126,8 @@ update = (data) => {
     circles.enter()
         .append('circle')
         .attr('fill', d => continentColor(d.continent))
+        .on('mouseover', tip.show)
+        .on('mouseout', tip.hide)
         .merge(circles)
         .transition(t)
             .attr('cx', d => xScale(d.income))
