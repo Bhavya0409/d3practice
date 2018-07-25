@@ -79,8 +79,6 @@ d3.json('data/gapminder.json').then((data) => {
         return {year: yearObject.year, countries: newCountries}
     });
 
-    console.log('new after', newData);
-
     d3.interval(() => {
         time = (time < 214) ? time+1 : 0;
         update(newData[time].countries);
