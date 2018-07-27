@@ -132,6 +132,16 @@ $("#continent-select").on("change", () => {
     update(formattedData[time])
 });
 
+$("#date-slider").slider({
+    max: 2014,
+    min: 1800,
+    step: 1,
+    slide: function(event, ui) {
+        time = ui.value - 1800;
+        update(formattedData[time]);
+    }
+});
+
 step = () => {
     time++;
     if (time === 214) time = 0;
@@ -167,6 +177,9 @@ update = (data) => {
             .attr('r', d => Math.sqrt(area(d.population) / Math.PI));
 
     timeLabel.text(1800 + time);
+    $("#year")[0].innerHTML = +(time + 1800);
+
+    $("#date-slider").slider("value", +(time + 1800));
 };
 
 // NOTE: This is just a redo of project 2 for practice
