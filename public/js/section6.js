@@ -4,6 +4,8 @@ const width = 800 - margin.left - margin.right,
     height = 600 - margin.top - margin.bottom;
 
 let time = 0;
+let interval;
+let formattedData;
 
 const g = d3.select('#chart-area')
     .append('svg')
@@ -97,7 +99,7 @@ continents.forEach((continent, i) => {
 });
 
 d3.json('data/gapminder.json').then(data => {
-    const formattedData = data.map(yearObject => {
+    formattedData = data.map(yearObject => {
         return yearObject.countries.filter(country => {
             return country.income && country.life_exp;
         }).map(country => {
@@ -107,19 +109,49 @@ d3.json('data/gapminder.json').then(data => {
         })
     });
 
-    // d3.interval(() => {
-    //     time++;
-    //     if (time === 214) time = 0;
-    //     update(formattedData[time]);
-    // }, 100);
-
     update(formattedData[0])
 });
+
+$("#play-button").on("click", function() {
+    const button = $(this);
+    if (button.text() === "Play") {
+        button.text("Pause");
+        interval = setInterval(step, 100);
+    } else {
+        button.text("Play");
+        clearInterval(interval);
+    }
+});
+
+$("#reset-button").on("click", function() {
+    time = 0;
+    update(formattedData[0]);
+});
+
+$("#continent-select").on("change", () => {
+    update(formattedData[time])
+});
+
+step = () => {
+    time++;
+    if (time === 214) time = 0;
+    update(formattedData[time]);
+};
 
 update = (data) => {
     const t = d3.transition().duration(100);
 
-    const circles = g.selectAll('circle').data(data, d => d.country);
+    const continent = $('#continent-select').val();
+
+    const filteredData = data.filter((d) => {
+        if (continent === 'all') {
+            return true;
+        } else {
+            return d.continent === continent;
+        }
+    });
+
+    const circles = g.selectAll('circle').data(filteredData, d => d.country);
 
     circles.exit().remove();
 
