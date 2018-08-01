@@ -36,6 +36,8 @@ const parseTime = d3.timeParse("%d/%m/%Y");
 // For tooltip
 const bisectDate = d3.bisector(function(d) { return d.year; }).left;
 
+var formatTime = d3.timeFormat("%d/%m/%Y");
+
 // Axis generators
 const xAxisCall = d3.axisBottom();
 const yAxisCall = d3.axisLeft()
@@ -61,6 +63,19 @@ const y = d3.scaleLinear().range([height, 0]);
 
 const lineScale = d3.line();
 
+$("#date-slider").slider({
+    range: true,
+    max: parseTime('31/10/2017').getTime(),
+    min: parseTime('12/05/2013').getTime(),
+    step: 1000 * 60 * 60 * 24,
+    values: [parseTime("12/5/2013").getTime(), parseTime('31/10/2017').getTime()],
+    slide: (event, ui) => {
+        $("#dateLabel1").text(formatTime(new Date(ui.values[0])));
+        $("#dateLabel2").text(formatTime(new Date(ui.values[1])));
+        update();
+    }
+});
+
 let filteredData = {};
 const cryptoKeys = ['bitcoin', 'bitcoin_cash', 'ethereum', 'litecoin', 'ripple'];
 let coin = cryptoKeys[0];
@@ -79,7 +94,7 @@ d3.json("data/coins.json").then(function(data) {
     });
     console.log('new data', filteredData);
     //TODO wire up with dropdown selector
-    update(filteredData);
+    update();
     /******************************** Tooltip Code ********************************/
 
     // var focus = g.append("g")
@@ -129,17 +144,18 @@ d3.json("data/coins.json").then(function(data) {
 });
 
 $("#var-select").on("change", e => {
-    update(filteredData)
+    update()
 });
 
 $("#coin-select").on("change", e => {
     coin = cryptoKeys[cryptoKeys.indexOf(e.target.value)];
-    update(filteredData)
+    update()
 });
 
-update = (data) => {
-    const coinData = data[coin];
+update = () => {
     const value = $('#var-select').val();
+    const sliderValues = $("#date-slider").slider("values");
+    const coinData = filteredData[coin].filter(d => d.date >= sliderValues[0] && d.date <= sliderValues[1]);
 
     const t = d3.transition().duration(500);
 
