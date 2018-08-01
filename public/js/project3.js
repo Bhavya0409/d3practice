@@ -64,7 +64,7 @@ const lineScale = d3.line();
 
 let filteredData = {};
 const cryptoKeys = ['bitcoin', 'bitcoin_cash', 'ethereum', 'litecoin', 'ripple'];
-const coin = cryptoKeys[0];
+let coin = cryptoKeys[0];
 
 d3.json("data/coins.json").then(function(data) {
     // Data cleaning
@@ -80,7 +80,7 @@ d3.json("data/coins.json").then(function(data) {
     });
     console.log('new data', filteredData);
     //TODO wire up with dropdown selector
-    update(filteredData, 'price_usd');
+    update(filteredData);
     /******************************** Tooltip Code ********************************/
 
     // var focus = g.append("g")
@@ -130,12 +130,18 @@ d3.json("data/coins.json").then(function(data) {
 });
 
 $("#var-select").on("change", e => {
-    // console.log(e.target.value);
-    update(filteredData, e.target.value)
+    update(filteredData)
 });
 
-update = (data, value) => {
+$("#coin-select").on("change", e => {
+    coin = cryptoKeys[cryptoKeys.indexOf(e.target.value)];
+    update(filteredData)
+});
+
+update = (data) => {
     const coinData = data[coin];
+    const value = $('#var-select').val();
+
     const t = d3.transition().duration(500);
 
     x.domain(d3.extent(coinData, d => d.date ));
