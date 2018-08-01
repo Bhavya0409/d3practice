@@ -26,7 +26,7 @@ const xLabel = g.append('text')
 const yLabel = g.append('text')
     .attr('class', 'y-axis-label')
     .attr('transform', 'rotate(-90)')
-    .attr('y', -65)
+    .attr('y', -60)
     .attr('x', -height/2)
     .attr('text-anchor', 'middle')
     .attr('font-size', '20px');
@@ -164,8 +164,19 @@ update = () => {
     y.domain([d3.min(coinData, d => d[value]) / 1.005,
         d3.max(coinData, d => d[value]) * 1.005]);
 
+    // Fix for format values
+    const formatSi = d3.format(".2s");
+    function formatAbbreviation(x) {
+        const s = formatSi(x);
+        switch (s[s.length - 1]) {
+            case "G": return s.slice(0, -1) + "B";
+            case "k": return s.slice(0, -1) + "K";
+        }
+        return s;
+    }
+
     xAxis.transition(t).call(xAxisCall.scale(x));
-    yAxis.transition(t).call(yAxisCall.scale(y));
+    yAxis.transition(t).call(yAxisCall.scale(y).tickFormat(formatAbbreviation));
 
     // Line path generator
     lineScale.x(function(d) { return x(d.date); })
