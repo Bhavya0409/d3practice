@@ -8,7 +8,8 @@ const margin = { left:80, right:100, top:50, bottom:100 },
     height = 500 - margin.top - margin.bottom,
     width = 800 - margin.left - margin.right;
 
-const svg = d3.select("#chart-area").append("svg")
+const svg = d3.select("#chart-area")
+    .append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom);
 
@@ -16,9 +17,25 @@ const g = svg.append("g")
     .attr("transform", "translate(" + margin.left +
         ", " + margin.top + ")");
 
+const t = () => d3.transition().duration(500);
+
+// Time parser for x-scale
+const parseTime = d3.timeParse("%d/%m/%Y");
+// For tooltip
+const bisectDate = d3.bisector(d => d.year).left;
+
+const formatTime = d3.timeFormat("%d/%m/%Y");
+
+// Add line to chart
+g.append("path")
+    .attr("class", "line")
+    .attr("fill", "none")
+    .attr("stroke", "grey")
+    .attr("stroke-with", "3px");
+
 const xLabel = g.append('text')
     .text('Time')
-    .attr('y', height + 60)
+    .attr('y', height + 50)
     .attr('x', width/2)
     .attr('text-anchor', 'middle')
     .attr('font-size', '20px');
@@ -31,37 +48,25 @@ const yLabel = g.append('text')
     .attr('text-anchor', 'middle')
     .attr('font-size', '20px');
 
-// Time parser for x-scale
-const parseTime = d3.timeParse("%d/%m/%Y");
-// For tooltip
-const bisectDate = d3.bisector(function(d) { return d.year; }).left;
-
-var formatTime = d3.timeFormat("%d/%m/%Y");
-
-// Axis generators
-const xAxisCall = d3.axisBottom();
-const yAxisCall = d3.axisLeft()
-    .ticks(6)
-    .tickFormat(function(d) { return parseInt(d / 1000) + "k"; });
-
-// Axis groups
-const xAxis = g.append("g")
-    .attr("class", "x axis")
-    .attr("transform", "translate(0," + height + ")");
-const yAxis = g.append("g")
-    .attr("class", "y axis");
-
-// Add line to chart
-let line = g.append("path")
-    .attr("class", "line")
-    .attr("fill", "none")
-    .attr("stroke", "grey")
-    .attr("stroke-with", "3px");
-
 const x = d3.scaleTime().range([0, width]);
 const y = d3.scaleLinear().range([height, 0]);
 
-const lineScale = d3.line();
+const xAxisCall = d3.axisBottom().ticks(4);
+const xAxis = g.append("g")
+    .attr("class", "x axis")
+    .attr("transform", "translate(0," + height + ")");
+
+const yAxisCall = d3.axisLeft();
+const yAxis = g.append("g")
+    .attr("class", "y axis");
+
+$("#var-select").on("change", e => {
+    update()
+});
+
+$("#coin-select").on("change", e => {
+    update();
+});
 
 $("#date-slider").slider({
     range: true,
@@ -78,7 +83,6 @@ $("#date-slider").slider({
 
 let filteredData = {};
 const cryptoKeys = ['bitcoin', 'bitcoin_cash', 'ethereum', 'litecoin', 'ripple'];
-let coin = cryptoKeys[0];
 
 d3.json("data/coins.json").then(function(data) {
     // Data cleaning
@@ -93,71 +97,15 @@ d3.json("data/coins.json").then(function(data) {
         })
     });
     console.log('new data', filteredData);
-    //TODO wire up with dropdown selector
     update();
-    /******************************** Tooltip Code ********************************/
 
-    // var focus = g.append("g")
-    //     .attr("class", "focus")
-    //     .style("display", "none");
-    //
-    // focus.append("line")
-    //     .attr("class", "x-hover-line hover-line")
-    //     .attr("y1", 0)
-    //     .attr("y2", height);
-    //
-    // focus.append("line")
-    //     .attr("class", "y-hover-line hover-line")
-    //     .attr("x1", 0)
-    //     .attr("x2", width);
-    //
-    // focus.append("circle")
-    //     .attr("r", 7.5);
-    //
-    // focus.append("text")
-    //     .attr("x", 15)
-    //     .attr("dy", ".31em");
-    //
-    // g.append("rect")
-    //     .attr("class", "overlay")
-    //     .attr("width", width)
-    //     .attr("height", height)
-    //     .on("mouseover", function() { focus.style("display", null); })
-    //     .on("mouseout", function() { focus.style("display", "none"); })
-    //     .on("mousemove", mousemove);
-    //
-    // function mousemove() {
-    //     var x0 = x.invert(d3.mouse(this)[0]),
-    //         i = bisectDate(data, x0, 1),
-    //         d0 = data[i - 1],
-    //         d1 = data[i],
-    //         d = x0 - d0.year > d1.year - x0 ? d1 : d0;
-    //     focus.attr("transform", "translate(" + x(d.year) + "," + y(d.value) + ")");
-    //     focus.select("text").text(d.value);
-    //     focus.select(".x-hover-line").attr("y2", height - y(d.value));
-    //     focus.select(".y-hover-line").attr("x2", -x(d.year));
-    // }
-
-
-    /******************************** Tooltip Code ********************************/
-
-});
-
-$("#var-select").on("change", e => {
-    update()
-});
-
-$("#coin-select").on("change", e => {
-    coin = cryptoKeys[cryptoKeys.indexOf(e.target.value)];
-    update()
 });
 
 update = () => {
+    const coin = $("#coin-select").val();
     const value = $('#var-select').val();
     const sliderValues = $("#date-slider").slider("values");
     const coinData = filteredData[coin].filter(d => d.date >= sliderValues[0] && d.date <= sliderValues[1]);
-
-    const t = d3.transition().duration(500);
 
     x.domain(d3.extent(coinData, d => d.date ));
 
@@ -175,14 +123,62 @@ update = () => {
         return s;
     }
 
-    xAxis.transition(t).call(xAxisCall.scale(x));
-    yAxis.transition(t).call(yAxisCall.scale(y).tickFormat(formatAbbreviation));
+    xAxis.transition(t()).call(xAxisCall.scale(x));
+    yAxis.transition(t()).call(yAxisCall.scale(y).tickFormat(formatAbbreviation));
 
-    // Line path generator
-    lineScale.x(function(d) { return x(d.date); })
-        .y(function(d) { return y(d[value]); });
+    /******************************** Tooltip Code ********************************/
 
-    line.transition(t).attr("d", lineScale(coinData));
+    d3.select(".focus").remove();
+    d3.select(".overlay").remove();
+
+    var focus = g.append("g")
+        .attr("class", "focus")
+        .style("display", "none");
+
+    focus.append("line")
+        .attr("class", "x-hover-line hover-line")
+        .attr("y1", 0)
+        .attr("y2", height);
+
+    focus.append("line")
+        .attr("class", "y-hover-line hover-line")
+        .attr("x1", 0)
+        .attr("x2", width);
+
+    focus.append("circle")
+        .attr("r", 5);
+
+    focus.append("text")
+        .attr("x", 15)
+        .attr("dy", ".31em");
+
+    svg.append("rect")
+        .attr("class", "overlay")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+        .attr("width", width)
+        .attr("height", height)
+        .on("mouseover", () => { focus.style("display", null); })
+        .on("mouseout", () => { focus.style("display", "none"); })
+        .on("mousemove", mousemove);
+
+    function mousemove() {
+        var x0 = x.invert(d3.mouse(this)[0]),
+            i = bisectDate(coinData, x0, 1),
+            d0 = coinData[i - 1],
+            d1 = coinData[i],
+            d = (d1 && d0) ? (x0 - d0.date > d1.date - x0 ? d1 : d0) : 0;
+        focus.attr("transform", "translate(" + x(d.date) + "," + y(d[value]) + ")");
+        focus.select("text").text(() => d3.format("$,")(d[value].toFixed(2)));
+        focus.select(".x-hover-line").attr("y2", height - y(d[value]));
+        focus.select(".y-hover-line").attr("x2", -x(d.date));
+    }
+
+    /******************************** Tooltip Code ********************************/
+
+    const lineScale = d3.line().x(d => x(d.date))
+        .y(d => y(d[value]));
+
+    g.select(".line").transition(t).attr("d", lineScale(coinData));
 
     let text;
     switch (value) {
@@ -190,10 +186,10 @@ update = () => {
             text = 'Price (USD)';
             break;
         case '24h_vol':
-            text = '24 Hour Trading Volume';
+            text = '24 Hour Trading Volume (USD)';
             break;
         case 'market_cap':
-            text = 'Market Cap (USD)';
+            text = 'Market Capitalization (USD)';
             break;
         default:
             text = '';
