@@ -16,6 +16,22 @@ const g = svg.append("g")
     .attr("transform", "translate(" + margin.left +
         ", " + margin.top + ")");
 
+const xLabel = g.append('text')
+    .text('Time')
+    .attr('y', height + 60)
+    .attr('x', width/2)
+    .attr('text-anchor', 'middle')
+    .attr('font-size', '20px');
+
+const yLabel = g.append('text')
+    .attr('class', 'y-axis-label')
+    .text('Price (USD)')
+    .attr('transform', 'rotate(-90)')
+    .attr('y', -65)
+    .attr('x', -height/2)
+    .attr('text-anchor', 'middle')
+    .attr('font-size', '20px');
+
 // Time parser for x-scale
 const parseTime = d3.timeParse("%d/%m/%Y");
 // For tooltip
@@ -50,16 +66,6 @@ let filteredData = {};
 const cryptoKeys = ['bitcoin', 'bitcoin_cash', 'ethereum', 'litecoin', 'ripple'];
 const coin = cryptoKeys[0];
 
-// Y-Axis label
-// yAxis.append("text")
-//     .attr("class", "axis-title")
-//     .attr("transform", "rotate(-90)")
-//     .attr("y", 6)
-//     .attr("dy", ".71em")
-//     .style("text-anchor", "end")
-//     .attr("fill", "#5D6971")
-//     .text("Population)");
-
 d3.json("data/coins.json").then(function(data) {
     // Data cleaning
     cryptoKeys.forEach(cryptoKey => {
@@ -74,7 +80,7 @@ d3.json("data/coins.json").then(function(data) {
     });
     console.log('new data', filteredData);
     //TODO wire up with dropdown selector
-    update(filteredData[coin]);
+    update(filteredData, 'price_usd');
     /******************************** Tooltip Code ********************************/
 
     // var focus = g.append("g")
@@ -125,22 +131,25 @@ d3.json("data/coins.json").then(function(data) {
 
 $("#var-select").on("change", e => {
     // console.log(e.target.value);
-    update(filteredData[coin])
+    update(filteredData, e.target.value)
 });
 
-update = (data) => {
-    x.domain(d3.extent(data, d => d.date ));
+update = (data, value) => {
+    const coinData = data[coin];
+    const t = d3.transition().duration(500);
 
-    y.domain([d3.min(data, d => d.price_usd) / 1.005,
-        d3.max(data, d => d.price_usd) * 1.005]);
+    x.domain(d3.extent(coinData, d => d.date ));
 
-    xAxis.call(xAxisCall.scale(x));
-    yAxis.call(yAxisCall.scale(y));
+    y.domain([d3.min(coinData, d => d[value]) / 1.005,
+        d3.max(coinData, d => d[value]) * 1.005]);
+
+    xAxis.transition(t).call(xAxisCall.scale(x));
+    yAxis.transition(t).call(yAxisCall.scale(y));
 
     // Line path generator
     lineScale.x(function(d) { return x(d.date); })
-        .y(function(d) { return y(d.price_usd); });
+        .y(function(d) { return y(d[value]); });
 
-    line.attr("d", lineScale(data));
+    line.transition(t).attr("d", lineScale(coinData));
 };
 
