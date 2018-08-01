@@ -34,20 +34,34 @@ const xAxis = g.append("g")
 const yAxis = g.append("g")
     .attr("class", "y axis");
 
+// Add line to chart
+let line = g.append("path")
+    .attr("class", "line")
+    .attr("fill", "none")
+    .attr("stroke", "grey")
+    .attr("stroke-with", "3px");
+
+const x = d3.scaleTime().range([0, width]);
+const y = d3.scaleLinear().range([height, 0]);
+
+const lineScale = d3.line();
+
+let filteredData = {};
+const cryptoKeys = ['bitcoin', 'bitcoin_cash', 'ethereum', 'litecoin', 'ripple'];
+const coin = cryptoKeys[0];
+
 // Y-Axis label
-yAxis.append("text")
-    .attr("class", "axis-title")
-    .attr("transform", "rotate(-90)")
-    .attr("y", 6)
-    .attr("dy", ".71em")
-    .style("text-anchor", "end")
-    .attr("fill", "#5D6971")
-    .text("Population)");
+// yAxis.append("text")
+//     .attr("class", "axis-title")
+//     .attr("transform", "rotate(-90)")
+//     .attr("y", 6)
+//     .attr("dy", ".71em")
+//     .style("text-anchor", "end")
+//     .attr("fill", "#5D6971")
+//     .text("Population)");
 
 d3.json("data/coins.json").then(function(data) {
     // Data cleaning
-    const cryptoKeys = ['bitcoin', 'bitcoin_cash', 'ethereum', 'litecoin', 'ripple'];
-    let filteredData = {};
     cryptoKeys.forEach(cryptoKey => {
         filteredData[cryptoKey] = data[cryptoKey].filter(d => d.price_usd !== null);
 
@@ -60,35 +74,7 @@ d3.json("data/coins.json").then(function(data) {
     });
     console.log('new data', filteredData);
     //TODO wire up with dropdown selector
-    const coin = cryptoKeys[0];
-
-    // Scales
-    const x = d3.scaleTime()
-        .range([0, width])
-        .domain(d3.extent(filteredData[coin], d => d.date ));
-
-    const y = d3.scaleLinear()
-        .range([height, 0])
-        .domain([d3.min(filteredData[coin],d => d.price_usd) / 1.005,
-            d3.max(filteredData[coin], d => d.price_usd) * 1.005]);
-
-    // Generate axes once scales have been set
-    xAxis.call(xAxisCall.scale(x));
-    yAxis.call(yAxisCall.scale(y));
-
-    // Line path generator
-    const line = d3.line()
-        .x(function(d) { return x(d.date); })
-        .y(function(d) { return y(d.price_usd); });
-
-    // Add line to chart
-    g.append("path")
-        .attr("class", "line")
-        .attr("fill", "none")
-        .attr("stroke", "grey")
-        .attr("stroke-with", "3px")
-        .attr("d", line(filteredData[coin]));
-
+    update(filteredData[coin]);
     /******************************** Tooltip Code ********************************/
 
     // var focus = g.append("g")
@@ -136,4 +122,25 @@ d3.json("data/coins.json").then(function(data) {
     /******************************** Tooltip Code ********************************/
 
 });
+
+$("#var-select").on("change", e => {
+    // console.log(e.target.value);
+    update(filteredData[coin])
+});
+
+update = (data) => {
+    x.domain(d3.extent(data, d => d.date ));
+
+    y.domain([d3.min(data, d => d.price_usd) / 1.005,
+        d3.max(data, d => d.price_usd) * 1.005]);
+
+    xAxis.call(xAxisCall.scale(x));
+    yAxis.call(yAxisCall.scale(y));
+
+    // Line path generator
+    lineScale.x(function(d) { return x(d.date); })
+        .y(function(d) { return y(d.price_usd); });
+
+    line.attr("d", lineScale(data));
+};
 
