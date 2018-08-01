@@ -25,7 +25,6 @@ const xLabel = g.append('text')
 
 const yLabel = g.append('text')
     .attr('class', 'y-axis-label')
-    .text('Price (USD)')
     .attr('transform', 'rotate(-90)')
     .attr('y', -65)
     .attr('x', -height/2)
@@ -157,5 +156,23 @@ update = (data) => {
         .y(function(d) { return y(d[value]); });
 
     line.transition(t).attr("d", lineScale(coinData));
+
+    let text;
+    switch (value) {
+        case 'price_usd':
+            text = 'Price (USD)';
+            break;
+        case '24h_vol':
+            text = '24 Hour Trading Volume';
+            break;
+        case 'market_cap':
+            text = 'Market Cap (USD)';
+            break;
+        default:
+            text = '';
+            break;
+    }
+
+    yLabel.text(text);
 };
 
