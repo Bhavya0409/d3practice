@@ -17,21 +17,20 @@ const g = svg.append("g")
     .attr("transform", "translate(" + margin.left +
         ", " + margin.top + ")");
 
-const t = () => d3.transition().duration(500);
+const t = () => d3.transition().duration(1000);
 
 // Time parser for x-scale
 const parseTime = d3.timeParse("%d/%m/%Y");
 // For tooltip
 const bisectDate = d3.bisector(d => d.date).left;
-
+// Format time into a readable format
 const formatTime = d3.timeFormat("%d/%m/%Y");
 
 // Add line to chart
 g.append("path")
     .attr("class", "line")
     .attr("fill", "none")
-    .attr("stroke", "grey")
-    .attr("stroke-with", "3px");
+    .attr("stroke", "grey");
 
 const xLabel = g.append('text')
     .text('Time')
@@ -48,8 +47,8 @@ const yLabel = g.append('text')
     .attr('text-anchor', 'middle')
     .attr('font-size', '20px');
 
-const x = d3.scaleTime().range([0, width]);
-const y = d3.scaleLinear().range([height, 0]);
+const xScale = d3.scaleTime().range([0, width]);
+const yScale = d3.scaleLinear().range([height, 0]);
 
 const xAxisCall = d3.axisBottom().ticks(4);
 const xAxis = g.append("g")
@@ -107,9 +106,9 @@ update = () => {
     const sliderValues = $("#date-slider").slider("values");
     const coinData = filteredData[coin].filter(d => d.date >= sliderValues[0] && d.date <= sliderValues[1]);
 
-    x.domain(d3.extent(coinData, d => d.date ));
+    xScale.domain(d3.extent(coinData, d => d.date ));
 
-    y.domain([d3.min(coinData, d => d[value]) / 1.005,
+    yScale.domain([d3.min(coinData, d => d[value]) / 1.005,
         d3.max(coinData, d => d[value]) * 1.005]);
 
     // Fix for format values
@@ -123,8 +122,8 @@ update = () => {
         return s;
     }
 
-    xAxis.transition(t()).call(xAxisCall.scale(x));
-    yAxis.transition(t()).call(yAxisCall.scale(y).tickFormat(formatAbbreviation));
+    xAxis.transition(t()).call(xAxisCall.scale(xScale));
+    yAxis.transition(t()).call(yAxisCall.scale(yScale).tickFormat(formatAbbreviation));
 
     /******************************** Tooltip Code ********************************/
 
@@ -162,21 +161,21 @@ update = () => {
         .on("mousemove", mousemove);
 
     function mousemove() {
-        var x0 = x.invert(d3.mouse(this)[0]),
+        var x0 = xScale.invert(d3.mouse(this)[0]),
             i = bisectDate(coinData, x0, 1),
             d0 = coinData[i - 1],
             d1 = coinData[i],
             d = (d1 && d0) ? (x0 - d0.date > d1.date - x0 ? d1 : d0) : 0;
-        focus.attr("transform", "translate(" + x(d.date) + "," + y(d[value]) + ")");
+        focus.attr("transform", "translate(" + xScale(d.date) + "," + yScale(d[value]) + ")");
         focus.select("text").text(() => d3.format("$,")(d[value].toFixed(2)));
-        focus.select(".x-hover-line").attr("y2", height - y(d[value]));
-        focus.select(".y-hover-line").attr("x2", -x(d.date));
+        focus.select(".x-hover-line").attr("y2", height - yScale(d[value]));
+        focus.select(".y-hover-line").attr("x2", -xScale(d.date));
     }
 
     /******************************** Tooltip Code ********************************/
 
-    const lineScale = d3.line().x(d => x(d.date))
-        .y(d => y(d[value]));
+    const lineScale = d3.line().x(d => xScale(d.date))
+        .y(d => yScale(d[value]));
 
     g.select(".line").transition(t).attr("d", lineScale(coinData));
 
