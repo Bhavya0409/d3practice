@@ -66,12 +66,11 @@ d3.json("data/coins.json").then(function(data) {
     const x = d3.scaleTime()
         .range([0, width])
         .domain(d3.extent(filteredData[coin], d => d.date ));
-    const min = d3.min(filteredData[coin],d => d.price_usd) / 1.005;
-    const max = d3.max(filteredData[coin], d => d.price_usd) * 1.005;
-    console.log('here', min, max)
+
     const y = d3.scaleLinear()
         .range([height, 0])
-        .domain([min, max]);
+        .domain([d3.min(filteredData[coin],d => d.price_usd) / 1.005,
+            d3.max(filteredData[coin], d => d.price_usd) * 1.005]);
 
     // Generate axes once scales have been set
     xAxis.call(xAxisCall.scale(x));
