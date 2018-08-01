@@ -22,7 +22,7 @@ const t = () => d3.transition().duration(500);
 // Time parser for x-scale
 const parseTime = d3.timeParse("%d/%m/%Y");
 // For tooltip
-const bisectDate = d3.bisector(d => d.year).left;
+const bisectDate = d3.bisector(d => d.date).left;
 
 const formatTime = d3.timeFormat("%d/%m/%Y");
 
